@@ -1,0 +1,12 @@
+[submodule "apps/api/epictetus_short-works_george-long"]
+	path = apps/api/epictetus_short-works_george-long
+	url = https://github.com/standardebooks/epictetus_short-works_george-long
+[submodule "apps/api/marcus-aurelius_meditations_george-long"]
+	path = apps/api/marcus-aurelius_meditations_george-long
+	url = https://github.com/standardebooks/marcus-aurelius_meditations_george-long
+[submodule "apps/api/epictetus_discourses_george-long"]
+	path = apps/api/epictetus_discourses_george-long
+	url = https://github.com/standardebooks/epictetus_discourses_george-long
+[submodule "apps/api/seneca_dialogues_aubrey-stewart"]
+	path = apps/api/seneca_dialogues_aubrey-stewart
+	url = https://github.com/standardebooks/seneca_dialogues_aubrey-stewart
