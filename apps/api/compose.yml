@@ -1,0 +1,9 @@
+services:
+  stoic-quote-api:
+    restart: always
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - 1234:3000
+    
