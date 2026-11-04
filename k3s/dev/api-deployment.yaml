@@ -1,0 +1,140 @@
+# Development variant of ../api-deployment.yaml for a local single-node k3s.
+# Differences from production:
+#   - namespace stoic-quote-dev, 1 replica
+#   - image is built locally and imported into k3s containerd (bin/dev-deploy.sh)
+#   - imagePullPolicy IfNotPresent so k3s never tries to reach a registry
+#   - /data is an emptyDir: dev SQLite state is disposable
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: stoic-quote-api
+  namespace: stoic-quote-dev
+  labels:
+    app.kubernetes.io/name: stoic-quote-api
+    app.kubernetes.io/instance: dev
+    app.kubernetes.io/component: api
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: stoic-quote-api
+      app.kubernetes.io/instance: dev
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: stoic-quote-api
+        app.kubernetes.io/instance: dev
+        app.kubernetes.io/component: api
+    spec:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        runAsGroup: 1000
+        fsGroup: 1000
+        seccompProfile:
+          type: RuntimeDefault
+
+      containers:
+        - name: api
+          # Loaded with `k3s ctr images import` by bin/dev-deploy.sh.
+          image: docker.io/library/stoic-quote-api:dev
+          imagePullPolicy: IfNotPresent
+
+          ports:
+            - name: http
+              containerPort: 3000
+              protocol: TCP
+
+          env:
+            - name: NODE_ENV
+              value: production
+            - name: PORT
+              value: "3000"
+            - name: DATA_DIR
+              value: /app/data
+            - name: SQLITE_PATH
+              value: /data/stoic.db
+            # Optional: create the secret in stoic-quote-dev to enable the
+            # AI/Unsplash features locally (see k3s/README.md).
+            - name: DEEPSEEK_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: stoic-quote-secrets
+                  key: DEEPSEEK_API_KEY
+                  optional: true
+            - name: DEEPSEEK_BASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: stoic-quote-secrets
+                  key: DEEPSEEK_BASE_URL
+                  optional: true
+            - name: DEEPSEEK_MODEL
+              valueFrom:
+                secretKeyRef:
+                  name: stoic-quote-secrets
+                  key: DEEPSEEK_MODEL
+                  optional: true
+            - name: UNSPLASH_ACCESS_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: stoic-quote-secrets
+                  key: UNSPLASH_ACCESS_KEY
+                  optional: true
+            # Observability: disabled unless an OTLP endpoint is configured.
+            - name: LOG_LEVEL
+              value: info
+            - name: OTEL_EXPORTER_OTLP_ENDPOINT
+              valueFrom:
+                secretKeyRef:
+                  name: stoic-quote-secrets
+                  key: OTEL_EXPORTER_OTLP_ENDPOINT
+                  optional: true
+            - name: OTEL_EXPORTER_OTLP_HEADERS
+              valueFrom:
+                secretKeyRef:
+                  name: stoic-quote-secrets
+                  key: OTEL_EXPORTER_OTLP_HEADERS
+                  optional: true
+
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop:
+                - ALL
+
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: http
+            initialDelaySeconds: 10
+            periodSeconds: 10
+
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: http
+            initialDelaySeconds: 5
+            periodSeconds: 5
+
+          resources:
+            requests:
+              cpu: 50m
+              memory: 64Mi
+            limits:
+              cpu: 500m
+              memory: 256Mi
+
+          volumeMounts:
+            - name: data
+              mountPath: /data
+            - name: tmp
+              mountPath: /tmp
+
+      volumes:
+        - name: data
+          emptyDir: {}
+        - name: tmp
+          emptyDir: {}

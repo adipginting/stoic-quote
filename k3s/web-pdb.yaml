@@ -1,0 +1,14 @@
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: stoic-quote-web
+  namespace: stoic-quote
+  labels:
+    app.kubernetes.io/name: stoic-quote-web
+    app.kubernetes.io/instance: production
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: stoic-quote-web
+      app.kubernetes.io/instance: production

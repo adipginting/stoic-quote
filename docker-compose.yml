@@ -1,0 +1,65 @@
+# Local development stack. Run from the repository root:
+#
+#   docker compose up --build
+#
+# API keys are passed through from the host environment when present
+# (the bare `NAME` entries); they are optional.
+name: stoic-quote
+
+services:
+  api:
+    build:
+      context: .
+      dockerfile: apps/api/Dockerfile
+    image: stoic-quote-api:local
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    # Docker creates the ./apps/api/.data bind-mount source as root, which the
+    # image's uid 1000 cannot write (SQLITE_CANTOPEN). Start as root only to
+    # take ownership of /data, then drop to `node` before exec'ing the server,
+    # so the API process itself is unprivileged like in k3s.
+    user: "0:0"
+    command:
+      - /bin/sh
+      - -c
+      - >-
+        chown -R node:node /data &&
+        exec setpriv --reuid=1000 --regid=1000 --clear-groups
+        node dist/main.js
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+      # Dataset baked into the image at apps/api/data.
+      - DATA_DIR=/app/data
+      # SQLite lives on the bind mount below, not in the container layer.
+      - SQLITE_PATH=/data/stoic.db
+      - DEEPSEEK_API_KEY
+      - DEEPSEEK_BASE_URL
+      - DEEPSEEK_MODEL
+      - UNSPLASH_ACCESS_KEY
+      # Optional observability; disabled unless OTEL_EXPORTER_OTLP_ENDPOINT is set.
+      - LOG_LEVEL
+      - OTEL_EXPORTER_OTLP_ENDPOINT
+      - OTEL_EXPORTER_OTLP_HEADERS
+    volumes:
+      - ./apps/api/.data:/data
+
+  web:
+    build:
+      context: .
+      dockerfile: apps/web/Dockerfile
+    image: stoic-quote-web:local
+    restart: unless-stopped
+    depends_on:
+      - api
+    ports:
+      - "3001:3000"
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+      - API_URL=http://api:3000
+      # Optional observability; disabled unless OTEL_EXPORTER_OTLP_ENDPOINT is set.
+      - LOG_LEVEL
+      - OTEL_EXPORTER_OTLP_ENDPOINT
+      - OTEL_EXPORTER_OTLP_HEADERS

@@ -24,6 +24,12 @@ dist
 build
 *.tsbuildinfo
 
+# Local SQLite (dev)
+.data
+*.db
+*.db-journal
+*.db-wal
+
 # IDE
 .vscode
 .idea

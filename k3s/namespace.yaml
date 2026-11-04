@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: stoic-quote
+  labels:
+    app.kubernetes.io/name: stoic-quote
+    app.kubernetes.io/instance: production

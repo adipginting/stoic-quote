@@ -1,49 +1,102 @@
-# Stoic Quote Turborepo
+# Stoic Quote
 
-This is a Turborepo monorepo containing the Stoic Quote application with an API and Web UI.
+Monorepo for a Stoic quote service:
 
-## Apps
+- `apps/api` — NestJS API. Quotes come from a checked-in dataset extracted from four public-domain Standard Ebooks translations (Marcus Aurelius, Seneca, Epictetus). It serves a JSON API at `/v2/*`, keeps the original plain-text endpoints frozen at `/` and per-work routes, and hosts Swagger at `/api-doc`.
+- `apps/web` — TanStack Start site (React, Vite, Nitro): a daily quote, random quotes, optional DeepSeek explanations, Unsplash imagery, and per-visitor favourites backed by SQLite.
 
-- `apps/api` - NestJS API server for stoic quotes
-- `apps/web` - Next.js frontend application
+## Repository layout
 
-## Getting Started
+| Path | Contents |
+| --- | --- |
+| `apps/api` | NestJS API (v2 JSON + frozen v1 text, Swagger, SQLite caches) |
+| `apps/web` | TanStack Start site (SSR, server functions, Tailwind v4) |
+| `k3s/` | Production manifests; `k3s/dev/` is a single-node dev overlay |
+| `bin/dev-deploy.sh` | Build, import images into k3s, roll out the dev stack |
+| `.github/`, `.gitlab-ci.yml` | CI/CD (GitHub Actions and GitLab) |
+| `docs/` | Docs index: architecture, API, observability, context ([docs/README.md](./docs/README.md)) |
 
-### Prerequisites
+See [docs/architecture.md](./docs/architecture.md) for the system design,
+[docs/api.md](./docs/api.md) for the HTTP API, and
+[docs/observability.md](./docs/observability.md) for telemetry. Contributions:
+[CONTRIBUTING.md](./CONTRIBUTING.md).
 
-- Node.js 18+
-- pnpm 9+
+## Requirements
 
-### Install dependencies
+- Node.js >= 22.12
+- pnpm 9 (`corepack enable`)
+
+## Setup
 
 ```bash
+git submodule update --init    # Standard Ebooks sources (only needed to re-extract)
 pnpm install
+pnpm extract                   # regenerate apps/api/data/quotes.json (committed; optional)
 ```
 
-### Development
-
-Run all apps in development mode:
+## Development
 
 ```bash
 pnpm dev
+# api → http://localhost:3000  (Swagger: /api-doc)
+# web → http://localhost:3001  (calls the API server-side; set API_URL to change)
 ```
 
-### Build
-
-Build all apps:
+## Checks
 
 ```bash
-pnpm build
+pnpm check-types   # tsc across both apps
+pnpm lint          # eslint (api)
+pnpm test          # jest (api) + vitest (web)
+pnpm build         # nest build + vite/nitro build
 ```
 
-### Lint
+## Environment
 
-```bash
-pnpm lint
-```
+| App | Variable | Default | Purpose |
+| --- | --- | --- | --- |
+| api | `PORT` | `3000` | HTTP port |
+| api | `DATA_DIR` | `./data` | Directory containing `quotes.json` |
+| api | `SQLITE_PATH` | `./.data/stoic.db` | Favourites + caches (SQLite) |
+| api | `DEEPSEEK_API_KEY` | — | Enables quote explanations (feature hides without it) |
+| api | `DEEPSEEK_BASE_URL` | `https://api.deepseek.com` | DeepSeek-compatible endpoint |
+| api | `DEEPSEEK_MODEL` | `deepseek-flash` | Explanation model |
+| api | `UNSPLASH_ACCESS_KEY` | — | Enables quote imagery (feature hides without it) |
+| web | `API_URL` | `http://localhost:3000` | API base URL used by server functions |
+| web | `PORT` | `3000` | HTTP port of the built Nitro server |
+| both | `LOG_LEVEL` | `info` (prod), `debug` (dev) | Pino log level |
+| both | `OTEL_EXPORTER_OTLP_ENDPOINT` | — | Enables OTLP trace + log export when set (off otherwise) |
+| both | `OTEL_EXPORTER_OTLP_HEADERS` | — | OTLP auth headers, e.g. `Authorization=Basic …` (Grafana Cloud) |
 
-## Useful Links
+## API
 
-- [Turborepo Documentation](https://turbo.build/repo/docs)
-- [NestJS Documentation](https://docs.nestjs.com/)
-- [Next.js Documentation](https://nextjs.org/docs)
+- `GET /v2/meta`, `GET /health`
+- `GET /v2/quotes/random?tag=&work=&minLength=&maxLength=`
+- `GET /v2/quotes/daily?date=YYYY-MM-DD` (deterministic per date)
+- `GET /v2/quotes/:id`
+- `GET /v2/quotes/:id/explanation` (DeepSeek, cached in SQLite)
+- `GET /v2/quotes/:id/image` (Unsplash; credit link returned with the photo)
+- `GET|POST|DELETE /v2/favourites` (`x-visitor-id` header; anonymous per-device)
+- v1: `GET /`, `/aurelius`, `/seneca`, `/epictetus-theenchiridion`, `/epictetus-discourses`
+
+## Data
+
+The dataset is generated deterministically by `apps/api/scripts/extract.mjs` from the pinned submodules and committed at `apps/api/data/quotes.json` (~7.9k quotes, 100–700 chars, tagged for imagery). CI re-runs the extraction and fails if the committed file is stale.
+
+## Observability
+
+Both apps log structured JSON with [pino](https://getpino.io) and, when
+`OTEL_EXPORTER_OTLP_ENDPOINT` is set, export OpenTelemetry traces and logs over
+OTLP. Telemetry is **off unless the endpoint is configured**, so local dev needs
+no setup. The API uses `nestjs-pino` for per-request logs; the web app logs
+through a server-only logger. Log lines carry `trace_id`/`span_id`, and
+web→api requests share one trace via W3C `traceparent` propagation.
+`x-visitor-id` and authorization headers are redacted; bodies are never logged.
+
+## Deployment
+
+`docker-compose.yml` runs both apps locally. Production runs on k3s — manifests
+in `k3s/`, image builds and deploys via `.github/workflows/main.yaml` or
+`.gitlab-ci.yml`; see `k3s/README.md`.
+
+Texts are public domain (George Long, Aubrey Stewart translations via Standard Ebooks). Photos are provided by the Unsplash API under its guidelines (hotlinked with photographer credit); explanations are generated by DeepSeek.

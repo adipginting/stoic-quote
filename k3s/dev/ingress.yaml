@@ -1,0 +1,35 @@
+# Development ingress: serves the site on stoic-quote.local via the k3s Traefik.
+# Add to /etc/hosts:  <traefik-external-ip>  stoic-quote.local api.stoic-quote.local
+# (bin/dev-deploy.sh prints the exact line for you.)
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: stoic-quote
+  namespace: stoic-quote-dev
+  labels:
+    app.kubernetes.io/name: stoic-quote
+    app.kubernetes.io/instance: dev
+spec:
+  ingressClassName: traefik
+  rules:
+    - host: stoic-quote.local
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: stoic-quote-web
+                port:
+                  number: 8080
+
+    - host: api.stoic-quote.local
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: stoic-quote-api
+                port:
+                  number: 8081

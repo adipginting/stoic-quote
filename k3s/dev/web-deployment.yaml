@@ -1,0 +1,109 @@
+# Development variant of ../web-deployment.yaml for a local single-node k3s.
+# Differences from production:
+#   - namespace stoic-quote-dev, 1 replica, no HPA/PDB
+#   - image is built locally and imported into k3s containerd (bin/dev-deploy.sh)
+#   - imagePullPolicy IfNotPresent so k3s never tries to reach a registry
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: stoic-quote-web
+  namespace: stoic-quote-dev
+  labels:
+    app.kubernetes.io/name: stoic-quote-web
+    app.kubernetes.io/instance: dev
+    app.kubernetes.io/component: web
+spec:
+  replicas: 1
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: stoic-quote-web
+      app.kubernetes.io/instance: dev
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: stoic-quote-web
+        app.kubernetes.io/instance: dev
+        app.kubernetes.io/component: web
+    spec:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        runAsGroup: 1000
+        seccompProfile:
+          type: RuntimeDefault
+
+      containers:
+        - name: web
+          # Loaded with `k3s ctr images import` by bin/dev-deploy.sh.
+          image: docker.io/library/stoic-quote-web:dev
+          imagePullPolicy: IfNotPresent
+
+          ports:
+            - name: http
+              containerPort: 3000
+              protocol: TCP
+
+          env:
+            - name: NODE_ENV
+              value: production
+            - name: PORT
+              value: "3000"
+            - name: API_URL
+              value: http://stoic-quote-api:3000
+            # Observability: disabled unless an OTLP endpoint is configured.
+            - name: LOG_LEVEL
+              value: info
+            - name: OTEL_EXPORTER_OTLP_ENDPOINT
+              valueFrom:
+                secretKeyRef:
+                  name: stoic-quote-secrets
+                  key: OTEL_EXPORTER_OTLP_ENDPOINT
+                  optional: true
+            - name: OTEL_EXPORTER_OTLP_HEADERS
+              valueFrom:
+                secretKeyRef:
+                  name: stoic-quote-secrets
+                  key: OTEL_EXPORTER_OTLP_HEADERS
+                  optional: true
+
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop:
+                - ALL
+
+          livenessProbe:
+            httpGet:
+              path: /
+              port: http
+            initialDelaySeconds: 5
+            periodSeconds: 10
+
+          readinessProbe:
+            httpGet:
+              path: /
+              port: http
+            initialDelaySeconds: 3
+            periodSeconds: 5
+
+          resources:
+            requests:
+              cpu: 50m
+              memory: 64Mi
+            limits:
+              cpu: 300m
+              memory: 256Mi
+
+          volumeMounts:
+            - name: tmp
+              mountPath: /tmp
+
+      volumes:
+        - name: tmp
+          emptyDir: {}

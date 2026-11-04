@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: stoic-quote-api-data
+  namespace: stoic-quote
+  labels:
+    app.kubernetes.io/name: stoic-quote-api
+    app.kubernetes.io/instance: production
+    app.kubernetes.io/component: api
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: local-path
+  resources:
+    requests:
+      storage: 1Gi

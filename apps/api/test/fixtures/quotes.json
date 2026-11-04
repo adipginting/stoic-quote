@@ -1,0 +1,149 @@
+{
+  "minLength": 104,
+  "maxLength": 221,
+  "sources": {
+    "meditations": "https://standardebooks.org/ebooks/marcus-aurelius/meditations/george-long",
+    "dialogues": "https://standardebooks.org/ebooks/seneca/dialogues/aubrey-stewart",
+    "enchiridion": "https://standardebooks.org/ebooks/epictetus/short-works/george-long",
+    "discourses": "https://standardebooks.org/ebooks/epictetus/discourses/george-long"
+  },
+  "counts": {
+    "meditations": 3,
+    "dialogues": 3,
+    "enchiridion": 2,
+    "discourses": 2
+  },
+  "quotes": [
+    {
+      "id": "meditations-2-1",
+      "text": "For we are made for cooperation, like feet, like hands, like eyelids, like the rows of the upper and lower teeth.",
+      "author": "Marcus Aurelius",
+      "work": "Meditations",
+      "workSlug": "meditations",
+      "section": "Book 2",
+      "translation": "George Long",
+      "tags": [
+        "stoicism",
+        "nature",
+        "reason"
+      ]
+    },
+    {
+      "id": "meditations-4-3",
+      "text": "Throw away thy books; no longer distract thyself: it is not allowed; but as if thou wast now dying, despise the flesh; it is blood and bones and a network, a contexture of nerves, veins, and arteries.",
+      "author": "Marcus Aurelius",
+      "work": "Meditations",
+      "workSlug": "meditations",
+      "section": "Book 4",
+      "translation": "George Long",
+      "tags": [
+        "death",
+        "time"
+      ]
+    },
+    {
+      "id": "meditations-4-2",
+      "text": "That which rules within, when it is according to nature, is so affected with respect to the events which happen, that it always easily adapts itself to that which is and is presented to it.",
+      "author": "Marcus Aurelius",
+      "work": "Meditations",
+      "workSlug": "meditations",
+      "section": "Book 4",
+      "translation": "George Long",
+      "tags": [
+        "nature",
+        "reason"
+      ]
+    },
+    {
+      "id": "dialogues-on-anger-1",
+      "text": "Other vices can be concealed and cherished in secret; anger shows itself openly and appears in the countenance, and the greater it is, the more plainly it boils forth.",
+      "author": "Seneca",
+      "work": "Dialogues",
+      "workSlug": "dialogues",
+      "section": "On Anger",
+      "translation": "Aubrey Stewart",
+      "tags": [
+        "anger"
+      ]
+    },
+    {
+      "id": "dialogues-on-anger-2",
+      "text": "See the foundations of the most celebrated cities hardly now to be discerned; they were ruined by anger.",
+      "author": "Seneca",
+      "work": "Dialogues",
+      "workSlug": "dialogues",
+      "section": "On Anger",
+      "translation": "Aubrey Stewart",
+      "tags": [
+        "anger",
+        "time"
+      ]
+    },
+    {
+      "id": "dialogues-shortness-of-life-1",
+      "text": "Thus it is: we do not receive a short life, but we make it a short one, and we are not poor in days, but wasteful of them.",
+      "author": "Seneca",
+      "work": "Dialogues",
+      "workSlug": "dialogues",
+      "section": "On the Shortness of Life",
+      "translation": "Aubrey Stewart",
+      "tags": [
+        "time",
+        "death"
+      ]
+    },
+    {
+      "id": "enchiridion-1",
+      "text": "And the things in our power are by nature free, not subject to restraint nor hindrance: but the things not in our power are weak, slavish, subject to restraint, in the power of others.",
+      "author": "Epictetus",
+      "work": "The Enchiridion",
+      "workSlug": "enchiridion",
+      "section": null,
+      "translation": "George Long",
+      "tags": [
+        "freedom",
+        "power",
+        "reason"
+      ]
+    },
+    {
+      "id": "enchiridion-2",
+      "text": "If then you desire (aim at) such great things, remember that you must not (attempt to) lay hold of them with a small effort; but you must leave alone some things entirely, and postpone others for the present.",
+      "author": "Epictetus",
+      "work": "The Enchiridion",
+      "workSlug": "enchiridion",
+      "section": null,
+      "translation": "George Long",
+      "tags": [
+        "desire",
+        "duty"
+      ]
+    },
+    {
+      "id": "discourses-2-1",
+      "text": "For if the bad consists in a bad exercise of the will, caution ought only to be used where things are dependent on the will.",
+      "author": "Epictetus",
+      "work": "Discourses",
+      "workSlug": "discourses",
+      "section": "Book 2",
+      "translation": "George Long",
+      "tags": [
+        "reason",
+        "virtue"
+      ]
+    },
+    {
+      "id": "discourses-2-2",
+      "text": "But if things independent of the will and not in our power are nothing to us, with respect to these we must employ confidence; and thus we shall both be cautious and confident, and indeed confident because of our caution.",
+      "author": "Epictetus",
+      "work": "Discourses",
+      "workSlug": "discourses",
+      "section": "Book 2",
+      "translation": "George Long",
+      "tags": [
+        "freedom",
+        "fear"
+      ]
+    }
+  ]
+}

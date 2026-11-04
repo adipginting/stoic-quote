@@ -1,0 +1,46 @@
+# Build context is the repo root (pnpm workspace, single lockfile).
+
+# Dependencies
+node_modules
+**/node_modules
+
+# VCS metadata (submodule .git files included)
+.git
+.gitmodules
+
+# Build outputs (regenerated inside the image)
+dist
+**/dist
+.output
+**/.output
+build
+**/build
+*.tsbuildinfo
+
+# Caches
+.turbo
+**/.turbo
+coverage
+**/coverage
+
+# Local runtime data / SQLite (never bake dev state into an image)
+.data
+**/.data
+*.db
+*.db-*
+*.sqlite
+*.sqlite3
+
+# Large Standard Ebooks submodules under apps/api.
+# The generated dataset is committed at apps/api/data/quotes.json
+# and MUST stay in the context, so these are excluded by name.
+apps/api/*_george-long
+apps/api/seneca_dialogues_aubrey-stewart
+
+# Local env / editor / OS noise
+.env
+.env.*
+.vscode
+.idea
+.DS_Store
+*.log
